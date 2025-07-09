@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Windows Clone</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { width:100%; height:100%; overflow:hidden; font-family:"Segoe UI", sans-serif; }
+
+    body {
+      background: url('wp.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .desktop { position:relative; width:100%; height:100%; display:none; }
+
+    .icon, .icon2 {
+      position:absolute; width:100px; text-align:center; cursor:pointer; color:#fff;
+    }
+    .icon img { width:72px; height:72px; margin-bottom:4px; }
+    .icon2 img { width:115px; height:65px; margin-bottom:4px; }
+
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 999;
+      box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .task-btn {
+      width: 40px;
+      height: 40px;
+      margin: 0 6px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .task-btn img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .start-button {
+      width: 40px;
+      height: 40px;
+      background: url('sb.png') no-repeat center center;
+      background-size: cover;
+      border-radius: 50%;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 999;
+    }
+
+    .start-menu {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 99;
+      overflow-y: auto;
+      color: #fff;
+      max-height: 90vh;
+    }
+
+    .start-menu.show { display: flex; }
+
+    .start-menu .left,
+    .start-menu .right {
+      padding: 15px;
+      width: 50%;
+    }
+
+    .start-menu .left {
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .start-menu .item {
+      padding: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .start-menu .item:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .window {
+      position: absolute;
+      width: 400px;
+      height: 300px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      resize: both;
+      overflow: auto;
+    }
+
+    .title-bar {
+      height: 32px;
+      background: #0078d7;
+      color: white;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: move;
+    }
+
+    .title-bar-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .title-bar-buttons button {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .title-bar-buttons button:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .window-content {
+      flex-grow: 1;
+      padding: 10px;
+    }
+
+    body.dark-mode {
+       background: url('wpd.png') no-repeat center center fixed;
+      background-size: cover;
+
+
+    }
+
+    body.dark-mode .window {
+     background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+    }
+
+    body.dark-mode .title-bar {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+    }
+
+    body.dark-mode .start-menu {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+    }
+
+    body.dark-mode .start-menu .item:hover,
+    body.dark-mode .title-bar-buttons button:hover {
+     background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+    }
+
+    #bootScreen {
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:black;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      z-index:10000;
+      animation: fadeOut 1s ease-out forwards;
+      animation-delay: 5s;
+    }
+
+    #bootScreen img {
+      width:150px;
+      margin-bottom: 30px;
+    }
+
+    .spinner {
+      border: 4px solid #444;
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+  </style>
+
+<link rel="stylesheet" href="https://pyscript.net/releases/2024.10.1/core.css">
+<script type="module" src="https://pyscript.net/releases/2024.10.1/core.js"></script>
+</head>
+<body>
+<div class="ta"></div>
+<py-script src="E:\AI AISC PROJECT\a.py"></py-script>
+  <!-- Boot Screen -->
+  <div id="bootScreen">
+    <img src="bootlogo.png" alt="Booting...">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Desktop -->
+  <div class="desktop" id="desktop">
+    <div class="icon" style="top:20px; left:20px;" onclick="openApp('This PC')">
+      <img src="tp.png" alt="This PC"/>
+      <div>This PC</div>
+    </div>
+    <div class="icon" style="top:120px; left:20px;" onclick="openApp('Recycle Bin')">
+      <img src="rb.png" alt="Recycle Bin"/>
+      <div>Recycle Bin</div>
+    </div>
+    <div class="icon2" style="top:220px; left:20px;" onclick="openApp('Graffit.AI')">
+      <img src="ai1a.png" alt="Graffit.AI"/>
+      <div>Graffit.AI</div>
+    </div>
+  </div>
+
+  <div class="taskbar">
+    <div class="start-button" onclick="toggleStartMenu()"></div>
+    <div id="taskbar-apps" style="display: flex;"></div>
+    <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+  </div>
+
+  <div id="startMenu" class="start-menu">
+    <div class="left">
+      <div class="item" onclick="openApp('Paint')">Paint</div>
+      <div class="item" onclick="openApp('Calculator')">Calculator</div>
+      <div class="item">Sticky Notes</div>
+      <div class="item">Remote Desktop</div>
+      <div class="item">System Info</div>
+    </div>
+    <div class="right">
+      <div class="item">User</div>
+      <div class="item">Documents</div>
+      <div class="item">Pictures</div>
+      <div class="item">Music</div>
+      <div class="item">Control Panel</div>
+    </div>
+  </div>
+
+  <script>
+    // After boot animation, show desktop
+    window.onload = () => {
+      setTimeout(() => {
+        document.getElementById('bootScreen').style.display = 'none';
+        document.getElementById('desktop').style.display = 'block';
+      }, 6000);
+    };
+
+    const taskbarApps = document.getElementById('taskbar-apps');
+    const openWindows = {};
+    let zIndex = 1000;
+
+    const iconMap = {
+      'This PC': 'tp.png',
+      'Recycle Bin': 'rb.png',
+      'Graffit.AI': 'ai1a.png',
+      'Paint': 'paint.png',
+      'Calculator': 'calc.png',
+    };
+
+    function toggleStartMenu() {
+      document.getElementById("startMenu").classList.toggle("show");
+    }
+
+    function openApp(title) {
+      if (openWindows[title]) {
+        const win = openWindows[title];
+        win.style.display = win.style.display === 'none' ? 'block' : 'none';
+        return;
+      }
+
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.style.top = '100px';
+      win.style.left = '100px';
+      win.innerHTML = `
+        <div class="title-bar" onmousedown="startDrag(event, this.parentElement)">
+          <span>${title}</span>
+          <div class="title-bar-buttons">
+            <button onclick="this.closest('.window').style.display='none'">_</button>
+            <button onclick="maximizeWindow(this)">☐</button>
+            <button onclick="closeWindow('${title}')">×</button>
+          </div>
+        </div>
+        <div class="window-content">${title} is running...</div>
+      `;
+      document.body.appendChild(win);
+      win.style.zIndex = ++zIndex;
+      openWindows[title] = win;
+
+      const taskIcon = document.createElement('button');
+      taskIcon.className = 'task-btn';
+      taskIcon.onclick = () => openApp(title);
+      const icon = iconMap[title] || 'default.png';
+      taskIcon.innerHTML = `<img src="${icon}" alt="${title}">`;
+      taskbarApps.appendChild(taskIcon);
+    }
+
+    function closeWindow(title) {
+      const win = openWindows[title];
+      if (win) {
+        win.remove();
+        delete openWindows[title];
+        [...taskbarApps.children].forEach(btn => {
+          if (btn.querySelector('img')?.alt === title) btn.remove();
+        });
+      }
+    }
+
+    function maximizeWindow(btn) {
+      const win = btn.closest('.window');
+      if (!win.classList.contains('maximized')) {
+        win.style.top = '0';
+        win.style.left = '0';
+        win.style.width = '100%';
+        win.style.height = 'calc(100% - 48px)';
+        win.classList.add('maximized');
+      } else {
+        win.style.top = '100px';
+        win.style.left = '100px';
+        win.style.width = '400px';
+        win.style.height = '300px';
+        win.classList.remove('maximized');
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      document.querySelectorAll('.window').forEach(win => {
+        win.classList.toggle('dark-mode');
+      });
+    }
+
+    // Dragging Logic
+    let offsetX, offsetY, dragTarget;
+    function startDrag(e, win) {
+      dragTarget = win;
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
+      document.onmousemove = dragMove;
+      document.onmouseup = stopDrag;
+    }
+
+    function dragMove(e) {
+      if (dragTarget) {
+        dragTarget.style.left = `${e.clientX - offsetX}px`;
+        dragTarget.style.top = `${e.clientY - offsetY}px`;
+      }
+    }
+
+    function stopDrag() {
+      dragTarget = null;
+      document.onmousemove = null;
+      document.onmouseup = null;
+    }
+  </script>
+
+<script type="py" src="a.py" config=""></script>
+</body>
+</html>
