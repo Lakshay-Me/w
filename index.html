@@ -213,6 +213,17 @@
       margin-bottom: 30px;
     }
 
+
+.corner-badge {
+   position: fixed;
+  bottom: 60px;
+  right: 16px;
+  width: 150px;
+  height: auto;
+  z-index: 9999;
+  cursor: pointer;
+}
+
     .spinner {
       border: 4px solid #444;
       border-top: 4px solid #fff;
@@ -233,12 +244,51 @@
         visibility: hidden;
       }
     }
+
+
+#speech-container {
+  position: fixed;
+  bottom: 200px;
+  right: 30px;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 10000;
+}
+
+#speech-bubble {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  max-width: 250px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+#speech-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 220px;
+  font-size: 14px;
+}
+
   </style>
 
 <link rel="stylesheet" href="https://pyscript.net/releases/2024.10.1/core.css">
 <script type="module" src="https://pyscript.net/releases/2024.10.1/core.js"></script>
 </head>
 <body>
+
+<!-- Add this inside <body> -->
+<img src="cl.png" class="corner-badge" alt="Corner Badge" />
+<div id="speech-container">
+  <div id="speech-bubble">Hi! How can I help you?</div>
+  <input type="text" id="speech-input" placeholder="Type here..." />
+</div>
+
 <div class="ta"></div>
 <py-script src="E:\AI AISC PROJECT\a.py"></py-script>
   <!-- Boot Screen -->
@@ -402,6 +452,13 @@
       document.onmousemove = null;
       document.onmouseup = null;
     }
+
+ const badge = document.querySelector('.corner-badge');
+  const speech = document.getElementById('speech-container');
+
+  badge.addEventListener('click', () => {
+    speech.style.display = speech.style.display === 'flex' ? 'none' : 'flex';
+  });
   </script>
 
 <script type="py" src="a.py" config=""></script>
